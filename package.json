@@ -4,6 +4,7 @@
   "description": "",
   "main": "./dist/library.js",
   "scripts": {
+    "debug": "node --inspect --inspect-brk node_modules/webpack/bin/webpack.js",
     "build": "webpack"
   },
   "keywords": [],
