@@ -3,14 +3,15 @@
   "version": "1.0.0",
   "description": "",
   "main": "./dist/library.js",
-  "scripts": {
-    "debug": "node --inspect --inspect-brk node_modules/webpack/bin/webpack.js",
-    "build": "webpack"
-  },
+  "scripts": {},
   "keywords": [],
   "author": "xy",
   "license": "ISC",
   "dependencies": {
+    "@babel/core": "^7.12.10",
+    "@babel/parser": "^7.12.10",
+    "@babel/preset-env": "^7.12.10",
+    "@babel/traverse": "^7.12.10",
     "lodash": "^4.17.20",
     "webpack": "^4.27.1",
     "webpack-cli": "^3.1.2"
