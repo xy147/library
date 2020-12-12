@@ -26,7 +26,6 @@ const moduleAnalyser = (filename) => {
 }
 const makeDependenciesGraph = (entry) => {
     const entryModule = moduleAnalyser(entry)
-    console.log(entryModule)
     const graphArray = [entryModule] //依赖图谱
     for (let i = 0; i < graphArray.length; i++) {
         const item = graphArray[i]
@@ -46,8 +45,27 @@ const makeDependenciesGraph = (entry) => {
     })
     return graph
 }
-const graphInfo = makeDependenciesGraph('./src/index.js')
-console.log(graphInfo)
+
+const generateCode = (entry) => {
+    const graph = JSON.stringify(makeDependenciesGraph(entry))
+    return `
+        (function(graph){ 
+            function require(module){
+                function localRequire(relativePath){
+                    return require(graph[module].dependencies[relativePath])
+                }
+                var exports = {};
+                (function(require,exports,code){
+                    eval(code)
+                })(localRequire,exports,graph[module].code)
+                return exports;
+            }
+            require('${entry}')
+        })(${graph})
+    `
+}
+const code = generateCode('./src/index.js')
+console.log(code)
 
 //分析下moduleAnalyser
 
@@ -104,3 +122,15 @@ console.log(graphInfo)
 //  './src/word.js': 
 //   { dependencies: {},
 //     code: '"use strict";\n\nObject.defineProperty(exports, "__esModule", {\n  value: true\n});\nexports.word = void 0;\nvar word = \'hello\';\nexports.word = word;' } }
+
+
+
+
+//generateCode函数的分析
+//该函数是生成我们最后正式在浏览器可以执行的代码。通过makeDependenciesGraph 返回的依赖图谱对象。
+//我们将图谱中的三段代码，去掉换行符，放入到src/finalCode.js中，在对照generateCode函数return回来函数去执行。这样可以更清晰看到整个的 最终代码生成的过程和结果。
+
+//整个返回的函数是字符串拼接的，并不会帮我们自动断句，所以语句上的分号都要加上。不然就会被连在一起从而出现语法错误。
+
+//require('${entry}')  还有这部分在外面额外加了个分号是因为，这里用es6的字符拼接获得的是require(./src/index.js)，整个都是一个字符串，但其实我们需要的是require('./src/index.js')。因此外面加了个分号。
+//始终注意这整个是一个字符串，但我们最终要实现的是正常代码的运行。即除去最外面的引号，代码和我们所需执行代码是一模一样的。
